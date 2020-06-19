@@ -16,23 +16,24 @@
 
 from absl.testing import absltest
 from absl.testing import parameterized
+
 from pegasus.params import test_utils
 
 
 class PretrainingParamsTests(test_utils.ParamsTestCase):
 
-  @parameterized.named_parameters(
-      ("aeslc_transformer", "aeslc_transformer", ""),
-  )
-  def test_train(self, params, param_overrides):
-    self.run_train(params, param_overrides)
+    @parameterized.named_parameters(
+        ("aeslc_transformer", "aeslc_transformer", ""),
+    )
+    def test_train(self, params, param_overrides):
+        self.run_train(params, param_overrides)
 
-  @parameterized.named_parameters(
-      ("aeslc_transformer", "aeslc_transformer", ""),
-  )
-  def test_eval(self, params, param_overrides):
-    self.run_eval(params, param_overrides)
+    @parameterized.named_parameters(
+        ("aeslc_transformer", "aeslc_transformer", ""),
+    )
+    def test_eval(self, params, param_overrides):
+        self.run_eval(params, param_overrides)
 
 
 if __name__ == "__main__":
-  absltest.main()
+    absltest.main()

@@ -20,22 +20,22 @@ from pegasus.eval.extractive import extractive_scorer
 
 class ExtractiveScorerTest(absltest.TestCase):
 
-  def test_extractive_fragments(self):
-    fragments = extractive_scorer._greedily_extract("a b c d e f g".split(),
-                                                    "c d e e a b".split())
-    self.assertSameStructure(fragments, [["c", "d", "e"], ["e"], ["a", "b"]])
+    def test_extractive_fragments(self):
+        fragments = extractive_scorer._greedily_extract("a b c d e f g".split(),
+                                                        "c d e e a b".split())
+        self.assertSameStructure(fragments, [["c", "d", "e"], ["e"], ["a", "b"]])
 
-  def test_extractive_scorer(self):
-    scorer = extractive_scorer.ExtractiveScorer(
-        ["coverage", "density", "normalized_density"])
-    score = scorer.score("c d e e a b z", "", "a b c d e f g")
-    self.assertSameStructure(
-        score, {
-            "coverage": (6 / 7., 0.),
-            "density": ((3 * 3 + 1 + 2 * 2) / 7., 0.),
-            "normalized_density": ((3 * 3 + 1 + 2 * 2) / 49., 0.)
-        })
+    def test_extractive_scorer(self):
+        scorer = extractive_scorer.ExtractiveScorer(
+            ["coverage", "density", "normalized_density"])
+        score = scorer.score("c d e e a b z", "", "a b c d e f g")
+        self.assertSameStructure(
+            score, {
+                "coverage": (6 / 7., 0.),
+                "density": ((3 * 3 + 1 + 2 * 2) / 7., 0.),
+                "normalized_density": ((3 * 3 + 1 + 2 * 2) / 49., 0.)
+            })
 
 
 if __name__ == "__main__":
-  absltest.main()
+    absltest.main()

@@ -14,24 +14,25 @@
 
 """Tests for pegasus.layers.embedding."""
 
-from absl.testing import absltest
-from pegasus.layers import embedding
 import tensorflow as tf
+from absl.testing import absltest
+
+from pegasus.layers import embedding
 
 
 class EmbeddingTest(tf.test.TestCase):
 
-  def test_embedding_layer_input(self):
-    embedding_layer = embedding.Embedding(12, 64, "test", tf.float32)
-    outputs = embedding_layer(tf.ones((5, 7), tf.int64), True)
-    self.assertEqual(outputs.shape, [5, 7, 64])
+    def test_embedding_layer_input(self):
+        embedding_layer = embedding.Embedding(12, 64, "test", tf.float32)
+        outputs = embedding_layer(tf.ones((5, 7), tf.int64), True)
+        self.assertEqual(outputs.shape, [5, 7, 64])
 
-  def test_embedding_layer_output(self):
-    embedding_layer = embedding.Embedding(12, 64, "test", tf.float32)
-    logits = embedding_layer(tf.ones((5, 7, 64)), False)
-    self.assertEqual(logits.shape, [5, 7, 12])
+    def test_embedding_layer_output(self):
+        embedding_layer = embedding.Embedding(12, 64, "test", tf.float32)
+        logits = embedding_layer(tf.ones((5, 7, 64)), False)
+        self.assertEqual(logits.shape, [5, 7, 12])
 
 
 if __name__ == "__main__":
-  tf.enable_eager_execution()
-  absltest.main()
+    tf.enable_eager_execution()
+    absltest.main()

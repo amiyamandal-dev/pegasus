@@ -18,19 +18,19 @@ _registered_params = {}
 
 
 def register(params_name):
-  """Decorator for registering a set of params."""
+    """Decorator for registering a set of params."""
 
-  def decorator(decorator_params_fn, decorator_params_name):
-    _registered_params[decorator_params_name] = decorator_params_fn
-    return decorator_params_fn
+    def decorator(decorator_params_fn, decorator_params_name):
+        _registered_params[decorator_params_name] = decorator_params_fn
+        return decorator_params_fn
 
-  return lambda model_fn: decorator(model_fn, params_name)
+    return lambda model_fn: decorator(model_fn, params_name)
 
 
 def get_params(name):
-  if not name:
-    raise ValueError("Name '%s' is not valid." % name)
-  if name not in _registered_params:
-    raise ValueError("Name '%s' is not registered. Registered names are %s." %
-                     (name, ",".join(_registered_params.keys())))
-  return _registered_params[name]
+    if not name:
+        raise ValueError("Name '%s' is not valid." % name)
+    if name not in _registered_params:
+        raise ValueError("Name '%s' is not registered. Registered names are %s." %
+                         (name, ",".join(_registered_params.keys())))
+    return _registered_params[name]

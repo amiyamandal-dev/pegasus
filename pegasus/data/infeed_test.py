@@ -26,24 +26,24 @@ _TEST_PATH = "pegasus/data/testdata/"
 
 class InfeedTest(tf.test.TestCase, parameterized.TestCase):
 
-  @parameterized.named_parameters(
-      ("tfds", "tfds:aeslc-test"),
-      ("tfrecord", "tfrecord:%s%s" % (_TEST_PATH, "data.tfrecord")),
-  )
-  def test_supervised_parser(self, config):
+    @parameterized.named_parameters(
+        ("tfds", "tfds:aeslc-test"),
+        ("tfrecord", "tfrecord:%s%s" % (_TEST_PATH, "data.tfrecord")),
+    )
+    def test_supervised_parser(self, config):
 
-    def parser_fn(mode):
-      return parsers.supervised_strings_parser(_SUBWORDS, "sentencepiece", 30,
-                                               10, mode)
+        def parser_fn(mode):
+            return parsers.supervised_strings_parser(_SUBWORDS, "sentencepiece", 30,
+                                                     10, mode)
 
-    data = infeed.get_input_fn(parser_fn, config, tf.estimator.ModeKeys.TRAIN)({
-        "batch_size": 4
-    })
-    d = next(iter(data))
-    self.assertEqual(d["inputs"].shape, [4, 30])
-    self.assertEqual(d["targets"].shape, [4, 10])
+        data = infeed.get_input_fn(parser_fn, config, tf.estimator.ModeKeys.TRAIN)({
+            "batch_size": 4
+        })
+        d = next(iter(data))
+        self.assertEqual(d["inputs"].shape, [4, 30])
+        self.assertEqual(d["targets"].shape, [4, 10])
 
 
 if __name__ == "__main__":
-  tf.enable_eager_execution()
-  absltest.main()
+    tf.enable_eager_execution()
+    absltest.main()

@@ -16,17 +16,16 @@
 import os
 import re
 
-from absl import logging
 import numpy as np
+import tensorflow as tf
+from absl import logging
+from rouge_score import rouge_scorer
+from rouge_score import scoring
+from tensorflow.contrib import summary as contrib_summary
 
 from pegasus.eval.bleu import bleu_scorer
 from pegasus.eval.length import length_scorer
 from pegasus.eval.repetition import repetition_scorer
-import tensorflow as tf
-
-from rouge_score import rouge_scorer
-from rouge_score import scoring
-from tensorflow.contrib import summary as contrib_summary
 
 _ROUGE_METRIC = "rouge"
 _BLEU_METRIC = "bleu"

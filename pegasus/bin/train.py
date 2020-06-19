@@ -53,42 +53,42 @@ flags.DEFINE_integer("tfds_train_examples", -1,
 
 
 def main(_):
-  params = registry.get_params(FLAGS.params)(FLAGS.param_overrides)
-  if FLAGS.tfds_train_examples > 0:
-    if not params.train_pattern.startswith("tfds:"):
-      raise ValueError("expect tfds type dataset.")
-    params.train_pattern += "-take_%d" % FLAGS.tfds_train_examples
-  estimator = estimator_utils.create_estimator(
-      FLAGS.master,
-      FLAGS.model_dir,
-      FLAGS.use_tpu,
-      FLAGS.iterations_per_loop,
-      FLAGS.num_shards,
-      params,
-      train_init_checkpoint=FLAGS.train_init_checkpoint,
-      train_warmup_steps=FLAGS.train_warmup_steps,
-      save_checkpoints_steps=FLAGS.save_checkpoints_steps,
-      keep_checkpoint_max=FLAGS.keep_checkpoint_max)
+    params = registry.get_params(FLAGS.params)(FLAGS.param_overrides)
+    if FLAGS.tfds_train_examples > 0:
+        if not params.train_pattern.startswith("tfds:"):
+            raise ValueError("expect tfds type dataset.")
+        params.train_pattern += "-take_%d" % FLAGS.tfds_train_examples
+    estimator = estimator_utils.create_estimator(
+        FLAGS.master,
+        FLAGS.model_dir,
+        FLAGS.use_tpu,
+        FLAGS.iterations_per_loop,
+        FLAGS.num_shards,
+        params,
+        train_init_checkpoint=FLAGS.train_init_checkpoint,
+        train_warmup_steps=FLAGS.train_warmup_steps,
+        save_checkpoints_steps=FLAGS.save_checkpoints_steps,
+        keep_checkpoint_max=FLAGS.keep_checkpoint_max)
 
-  # Split training into sesions, walkaround yaqs/5313417304080384
-  # Tensorflow estimator doesn't respect save_checkpoints_steps when running in
-  # distributed environment
-  if FLAGS.train_steps_overrides:
-    train_steps_list = [
-        int(s) for s in FLAGS.train_steps_overrides.split(",") if int(s) > 0
-    ]
-  else:
-    train_steps_list = [params.train_steps]
-  for train_steps in train_steps_list:
-    estimator.train(
-        input_fn=infeed.get_input_fn(
-            params.parser,
-            params.train_pattern,
-            tf.estimator.ModeKeys.TRAIN,
-            parallelism=FLAGS.train_infeed_parallelism),
-        max_steps=train_steps)
+    # Split training into sesions, walkaround yaqs/5313417304080384
+    # Tensorflow estimator doesn't respect save_checkpoints_steps when running in
+    # distributed environment
+    if FLAGS.train_steps_overrides:
+        train_steps_list = [
+            int(s) for s in FLAGS.train_steps_overrides.split(",") if int(s) > 0
+        ]
+    else:
+        train_steps_list = [params.train_steps]
+    for train_steps in train_steps_list:
+        estimator.train(
+            input_fn=infeed.get_input_fn(
+                params.parser,
+                params.train_pattern,
+                tf.estimator.ModeKeys.TRAIN,
+                parallelism=FLAGS.train_infeed_parallelism),
+            max_steps=train_steps)
 
 
 if __name__ == "__main__":
-  flags.mark_flags_as_required(["params", "model_dir"])
-  tf.app.run(main)
+    flags.mark_flags_as_required(["params", "model_dir"])
+    tf.app.run(main)

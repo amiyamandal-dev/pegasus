@@ -14,42 +14,43 @@
 
 """Tests for pegasus.layers.transformer_block."""
 
-from absl.testing import absltest
-from pegasus.layers import transformer_block
 import tensorflow as tf
+from absl.testing import absltest
+
+from pegasus.layers import transformer_block
 
 
 class TransformerBlockTest(tf.test.TestCase):
 
-  def test_transformer_block(self):
-    hidden_size = 128
-    filter_size = 128
-    num_heads = 2
-    dropout = 0.1
-    batch_size = 3
-    input_len = 10
-    block = transformer_block.TransformerBlock(hidden_size, filter_size,
-                                               num_heads, dropout)
-    output = block(True, tf.ones((batch_size, input_len, hidden_size)),
-                   tf.ones((batch_size, 1, input_len)), None, None)
-    self.assertEqual(output.shape, [batch_size, input_len, hidden_size])
+    def test_transformer_block(self):
+        hidden_size = 128
+        filter_size = 128
+        num_heads = 2
+        dropout = 0.1
+        batch_size = 3
+        input_len = 10
+        block = transformer_block.TransformerBlock(hidden_size, filter_size,
+                                                   num_heads, dropout)
+        output = block(True, tf.ones((batch_size, input_len, hidden_size)),
+                       tf.ones((batch_size, 1, input_len)), None, None)
+        self.assertEqual(output.shape, [batch_size, input_len, hidden_size])
 
-  def test_transformer_block_memory(self):
-    hidden_size = 128
-    filter_size = 128
-    num_heads = 2
-    dropout = 0.1
-    batch_size = 3
-    input_len = 10
-    memory_len = 15
-    block = transformer_block.TransformerBlock(hidden_size, filter_size,
-                                               num_heads, dropout)
-    output = block(True, tf.ones((batch_size, input_len, hidden_size)),
-                   tf.ones((1, input_len, input_len)),
-                   tf.ones((batch_size, memory_len, hidden_size)),
-                   tf.ones((batch_size, 1, memory_len)))
-    self.assertEqual(output.shape, [batch_size, input_len, hidden_size])
+    def test_transformer_block_memory(self):
+        hidden_size = 128
+        filter_size = 128
+        num_heads = 2
+        dropout = 0.1
+        batch_size = 3
+        input_len = 10
+        memory_len = 15
+        block = transformer_block.TransformerBlock(hidden_size, filter_size,
+                                                   num_heads, dropout)
+        output = block(True, tf.ones((batch_size, input_len, hidden_size)),
+                       tf.ones((1, input_len, input_len)),
+                       tf.ones((batch_size, memory_len, hidden_size)),
+                       tf.ones((batch_size, 1, memory_len)))
+        self.assertEqual(output.shape, [batch_size, input_len, hidden_size])
 
 
 if __name__ == '__main__':
-  absltest.main()
+    absltest.main()

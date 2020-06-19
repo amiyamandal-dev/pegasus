@@ -24,33 +24,33 @@ from pegasus.data import datasets
 
 
 class PublicPretrainingTFDSDataset(datasets.TFDSDataset):
-  """Public pretraining dataset."""
+    """Public pretraining dataset."""
 
-  @property
-  def is_supervised(self):
-    return False
+    @property
+    def is_supervised(self):
+        return False
 
-  def load(self, build, split, shuffle):
-    return self._split_train_98_1_1(build, split, shuffle)
+    def load(self, build, split, shuffle):
+        return self._split_train_98_1_1(build, split, shuffle)
 
 
 @datasets.register("common_crawl")
 class CommonCrawlDataset(PublicPretrainingTFDSDataset):
-  """Public C4 dataset."""
+    """Public C4 dataset."""
 
-  def override_build(self, build):
-    return "c4/en" + build.lstrip("common_crawl")
+    def override_build(self, build):
+        return "c4/en" + build.lstrip("common_crawl")
 
-  def load(self, build, split, shuffle):
-    return self._split_validation_50_50(build, split, shuffle)
+    def load(self, build, split, shuffle):
+        return self._split_validation_50_50(build, split, shuffle)
 
 
 @datasets.register("wikipedia")
 class WikipediaDataset(PublicPretrainingTFDSDataset):
 
-  def override_build(self, build):
-    return "wikipedia/20190301.en" + build.lstrip("wikipedia")
+    def override_build(self, build):
+        return "wikipedia/20190301.en" + build.lstrip("wikipedia")
 
-  @property
-  def num_examples(self):
-    return 5e6
+    @property
+    def num_examples(self):
+        return 5e6

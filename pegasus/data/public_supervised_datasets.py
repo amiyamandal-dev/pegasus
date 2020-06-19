@@ -28,77 +28,75 @@ import tensorflow_datasets as tfds
 @datasets.register("tfrecord")
 class TFRecordDataset(datasets.FilesDataset):
 
-  @property
-  def reader_fn(self):
-    return tf.data.TFRecordDataset
-
-
+    @property
+    def reader_fn(self):
+        return tf.data.TFRecordDataset
 
 
 class PublicSupervisedTFDSDataset(datasets.TFDSDataset):
-  pass
+    pass
 
 
 @datasets.register("billsum")
 class BillsumDataset(PublicSupervisedTFDSDataset):
-  """Billsum dataset."""
+    """Billsum dataset."""
 
-  def load(self, build, split, shuffle):
-    # Those supervised datasets have train and test set and do not provide a
-    # validation split. We split train into 90/10 for train and validation.
-    split_patterns = {
-        "train": "train[:90%]",
-        "validation": "train[90%:]",
-        "test": "test"
-    }
-    dataset, info = tfds.load(
-        self.override_build(build),
-        as_supervised=self.is_supervised,
-        split=split_patterns[split],
-        shuffle_files=shuffle,
-        with_info=True,
-        data_dir=self.data_dir)
-    if split == "train":
-      num_examples = info.splits["train"].num_examples * 0.9
-    elif split == "validation":
-      num_examples = info.splits["train"].num_examples * 0.1
-    else:
-      num_examples = info.splits["test"].num_examples
-    return dataset, num_examples
+    def load(self, build, split, shuffle):
+        # Those supervised datasets have train and test set and do not provide a
+        # validation split. We split train into 90/10 for train and validation.
+        split_patterns = {
+            "train": "train[:90%]",
+            "validation": "train[90%:]",
+            "test": "test"
+        }
+        dataset, info = tfds.load(
+            self.override_build(build),
+            as_supervised=self.is_supervised,
+            split=split_patterns[split],
+            shuffle_files=shuffle,
+            with_info=True,
+            data_dir=self.data_dir)
+        if split == "train":
+            num_examples = info.splits["train"].num_examples * 0.9
+        elif split == "validation":
+            num_examples = info.splits["train"].num_examples * 0.1
+        else:
+            num_examples = info.splits["test"].num_examples
+        return dataset, num_examples
 
 
 @datasets.register("newsroom_abstractive")
 class NewsroomAbstractiveDataset(PublicSupervisedTFDSDataset):
-  """Newsroom, Abstract summaries only."""
+    """Newsroom, Abstract summaries only."""
 
-  def load(self, build, split, shuffle):
-    dataset, info = tfds.load(
-        self.override_build(build),
-        as_supervised=False,
-        split=split,
-        with_info=True,
-        shuffle_files=shuffle,
-        data_dir=self.data_dir)
-    return dataset, info.splits[split].num_examples
+    def load(self, build, split, shuffle):
+        dataset, info = tfds.load(
+            self.override_build(build),
+            as_supervised=False,
+            split=split,
+            with_info=True,
+            shuffle_files=shuffle,
+            data_dir=self.data_dir)
+        return dataset, info.splits[split].num_examples
 
-  def override_build(self, build):
-    return "newsroom" + build.lstrip("newsroom_abstractive")
+    def override_build(self, build):
+        return "newsroom" + build.lstrip("newsroom_abstractive")
 
-  def transform(self, dataset):
-    dataset = dataset.filter(
-        lambda d: tf.equal(d["density_bin"], tf.constant("abstractive")))
-    # pylint: disable=g-long-lambda
-    return dataset.map(
-        lambda d: {
-            "inputs": d["text"],
-            "targets": d["summary"],
-            "supervised": tf.constant(self.is_supervised)
-        })
+    def transform(self, dataset):
+        dataset = dataset.filter(
+            lambda d: tf.equal(d["density_bin"], tf.constant("abstractive")))
+        # pylint: disable=g-long-lambda
+        return dataset.map(
+            lambda d: {
+                "inputs": d["text"],
+                "targets": d["summary"],
+                "supervised": tf.constant(self.is_supervised)
+            })
 
 
 @datasets.register("reddit_tifu")
 class RedditTifuDataset(PublicSupervisedTFDSDataset):
-  """RedditTifu dataset."""
+    """RedditTifu dataset."""
 
-  def load(self, build, split, shuffle):
-    return self._split_train_80_10_10(build, split, shuffle)
+    def load(self, build, split, shuffle):
+        return self._split_train_80_10_10(build, split, shuffle)

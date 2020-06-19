@@ -18,7 +18,7 @@ import setuptools
 
 # Get the long description from the README file.
 with open('README.md') as fp:
-  _LONG_DESCRIPTION = fp.read()
+    _LONG_DESCRIPTION = fp.read()
 
 setuptools.setup(
     name='pegasus',

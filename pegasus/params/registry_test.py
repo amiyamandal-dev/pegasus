@@ -15,21 +15,22 @@
 """Tests for pegasus.params.registry."""
 
 from absl.testing import absltest
+
 from pegasus.params import registry
 
 
 class RegistryTest(absltest.TestCase):
 
-  def test_register_params(self):
-    called = [False]
+    def test_register_params(self):
+        called = [False]
 
-    def my_fn():
-      called[0] = True
+        def my_fn():
+            called[0] = True
 
-    registry.register("test_params")(my_fn)
-    registry.get_params("test_params")()
-    self.assertTrue(called[0])
+        registry.register("test_params")(my_fn)
+        registry.get_params("test_params")()
+        self.assertTrue(called[0])
 
 
 if __name__ == "__main__":
-  absltest.main()
+    absltest.main()

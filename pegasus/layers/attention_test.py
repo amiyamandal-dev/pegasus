@@ -14,26 +14,27 @@
 
 """Tests for pegasus.layers.attention."""
 
-from absl.testing import absltest
-from pegasus.layers import attention
 import tensorflow as tf
+from absl.testing import absltest
+
+from pegasus.layers import attention
 
 
 class AttentionTest(tf.test.TestCase):
 
-  def test_attention(self):
-    batch_size = 3
-    input_len = 5
-    mem_len = 7
-    hidden_size = 4
-    num_heads = 2
-    attn = attention.Attention(hidden_size, num_heads, 0.1)
-    states = attn(
-        tf.zeros([batch_size, input_len, hidden_size]),
-        tf.zeros([batch_size, mem_len, hidden_size]),
-        tf.zeros([batch_size, input_len, mem_len]), True)
-    self.assertAllEqual([batch_size, input_len, hidden_size], states.shape)
+    def test_attention(self):
+        batch_size = 3
+        input_len = 5
+        mem_len = 7
+        hidden_size = 4
+        num_heads = 2
+        attn = attention.Attention(hidden_size, num_heads, 0.1)
+        states = attn(
+            tf.zeros([batch_size, input_len, hidden_size]),
+            tf.zeros([batch_size, mem_len, hidden_size]),
+            tf.zeros([batch_size, input_len, mem_len]), True)
+        self.assertAllEqual([batch_size, input_len, hidden_size], states.shape)
 
 
 if __name__ == "__main__":
-  absltest.main()
+    absltest.main()

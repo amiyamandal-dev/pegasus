@@ -41,73 +41,73 @@ flags.DEFINE_boolean("enable_logging", True, "Enable logging of model ouputs.")
 
 
 def main(_):
-  param_overrides = FLAGS.param_overrides or ""
-  param_overrides = param_overrides.replace("use_bfloat16=true",
-                                            "use_bfloat16=false")
+    param_overrides = FLAGS.param_overrides or ""
+    param_overrides = param_overrides.replace("use_bfloat16=true",
+                                              "use_bfloat16=false")
 
-  params = registry.get_params(FLAGS.params)(FLAGS.param_overrides)
-  estimator = estimator_utils.create_estimator(FLAGS.master, FLAGS.model_dir,
-                                               FLAGS.use_tpu,
-                                               FLAGS.iterations_per_loop,
-                                               FLAGS.num_shards, params)
+    params = registry.get_params(FLAGS.params)(FLAGS.param_overrides)
+    estimator = estimator_utils.create_estimator(FLAGS.master, FLAGS.model_dir,
+                                                 FLAGS.use_tpu,
+                                                 FLAGS.iterations_per_loop,
+                                                 FLAGS.num_shards, params)
 
-  for _ in contrib_training.checkpoints_iterator(
-      FLAGS.model_dir, min_interval_secs=60):
-    global_step = estimator.get_variable_value("global_step")
-    tf.logging.info("Evaluating at global step %d", global_step)
+    for _ in contrib_training.checkpoints_iterator(
+            FLAGS.model_dir, min_interval_secs=60):
+        global_step = estimator.get_variable_value("global_step")
+        tf.logging.info("Evaluating at global step %d", global_step)
 
+        input_fn = infeed.get_input_fn(params.parser, params.dev_pattern,
+                                       tf.estimator.ModeKeys.PREDICT)
+        predictions = estimator.predict(input_fn=input_fn)
+        if params.eval_max_predictions > 0:
+            eval_max_predictions = params.eval_max_predictions
+            predictions = itertools.islice(predictions, eval_max_predictions)
+        else:
+            eval_max_predictions = None
+        params.eval(predictions, FLAGS.model_dir, global_step, "eval_decode_dev",
+                    FLAGS.enable_logging)
+
+        # In eval, topology is 1x1, total batch size is single core batch size.
+        if eval_max_predictions:
+            eval_steps = max(
+                1, eval_max_predictions // params.batch_size // FLAGS.num_shards)
+        else:
+            eval_steps = None
+            if FLAGS.use_tpu:
+                raise ValueError(
+                    "The parameter eval_max_predictions has to be defined on TPU.")
+
+        # Token-based metrics (e.g. perplexity, accuracy) calculated on the dev set.
+        estimator.evaluate(
+            input_fn=infeed.get_input_fn(params.parser, params.train_pattern,
+                                         tf.estimator.ModeKeys.EVAL),
+            steps=eval_steps,
+            name="train")
+
+        # Token-based metrics calculated on the same set used to train.
+        estimator.evaluate(
+            input_fn=infeed.get_input_fn(params.parser, params.dev_pattern,
+                                         tf.estimator.ModeKeys.EVAL),
+            steps=eval_steps,
+            name="dev")
+
+        if global_step >= params.train_steps:
+            break
+
+    # Run a final eval on entire dev and test sets.
+    input_fn = infeed.get_input_fn(params.parser, params.test_pattern,
+                                   tf.estimator.ModeKeys.PREDICT)
+    predictions = estimator.predict(input_fn=input_fn)
+    params.eval(predictions, FLAGS.model_dir, global_step,
+                "eval_decode_final_test", FLAGS.enable_logging)
     input_fn = infeed.get_input_fn(params.parser, params.dev_pattern,
                                    tf.estimator.ModeKeys.PREDICT)
     predictions = estimator.predict(input_fn=input_fn)
-    if params.eval_max_predictions > 0:
-      eval_max_predictions = params.eval_max_predictions
-      predictions = itertools.islice(predictions, eval_max_predictions)
-    else:
-      eval_max_predictions = None
-    params.eval(predictions, FLAGS.model_dir, global_step, "eval_decode_dev",
-                FLAGS.enable_logging)
-
-    # In eval, topology is 1x1, total batch size is single core batch size.
-    if eval_max_predictions:
-      eval_steps = max(
-          1, eval_max_predictions // params.batch_size // FLAGS.num_shards)
-    else:
-      eval_steps = None
-      if FLAGS.use_tpu:
-        raise ValueError(
-            "The parameter eval_max_predictions has to be defined on TPU.")
-
-    # Token-based metrics (e.g. perplexity, accuracy) calculated on the dev set.
-    estimator.evaluate(
-        input_fn=infeed.get_input_fn(params.parser, params.train_pattern,
-                                     tf.estimator.ModeKeys.EVAL),
-        steps=eval_steps,
-        name="train")
-
-    # Token-based metrics calculated on the same set used to train.
-    estimator.evaluate(
-        input_fn=infeed.get_input_fn(params.parser, params.dev_pattern,
-                                     tf.estimator.ModeKeys.EVAL),
-        steps=eval_steps,
-        name="dev")
-
-    if global_step >= params.train_steps:
-      break
-
-  # Run a final eval on entire dev and test sets.
-  input_fn = infeed.get_input_fn(params.parser, params.test_pattern,
-                                 tf.estimator.ModeKeys.PREDICT)
-  predictions = estimator.predict(input_fn=input_fn)
-  params.eval(predictions, FLAGS.model_dir, global_step,
-              "eval_decode_final_test", FLAGS.enable_logging)
-  input_fn = infeed.get_input_fn(params.parser, params.dev_pattern,
-                                 tf.estimator.ModeKeys.PREDICT)
-  predictions = estimator.predict(input_fn=input_fn)
-  params.eval(predictions, FLAGS.model_dir, global_step,
-              "eval_decode_final_dev", FLAGS.enable_logging)
+    params.eval(predictions, FLAGS.model_dir, global_step,
+                "eval_decode_final_dev", FLAGS.enable_logging)
 
 
 if __name__ == "__main__":
-  flags.mark_flags_as_required(["params", "model_dir"])
-  tf.enable_eager_execution()
-  tf.app.run(main)
+    flags.mark_flags_as_required(["params", "model_dir"])
+    tf.enable_eager_execution()
+    tf.app.run(main)
